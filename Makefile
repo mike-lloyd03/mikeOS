@@ -1,21 +1,26 @@
-default: build
+.PHONY default: build run clean
 
-multiboot_header.o: multiboot_header.asm
-	nasm -f elf64 multiboot_header.asm
+build/multiboot_header.o: multiboot_header.asm
+	mkdir -p build
+	nasm -f elf64 multiboot_header.asm -o build/multiboot_header.o
 
-boot.o: boot.asm
-	nasm -f elf64 boot.asm
+build/boot.o: boot.asm
+	mkdir -p build
+	nasm -f elf64 boot.asm -o build/boot.o
 
-kernel.bin: multiboot_header.o boot.o linker.ld
-	ld -n -o kernel.bin -T linker.ld multiboot_header.o boot.o
+build/kernel.bin: build/multiboot_header.o build/boot.o linker.ld
+	ld -n -o build/kernel.bin -T linker.ld build/multiboot_header.o build/boot.o
 
-os.iso: kernel.bin grub.cfg
-	mkdir -p isofiles/boot/grub
-	cp grub.cfg isofiles/boot/grub
-	cp kernel.bin isofiles/boot/
-	grub-mkrescue -o os.iso isofiles
+build/os.iso: build/kernel.bin grub.cfg
+	mkdir -p build/isofiles/boot/grub
+	cp grub.cfg build/isofiles/boot/grub
+	cp kernel.bin build/isofiles/boot/
+	grub-mkrescue -o build/os.iso build/isofiles
 
-build: os.iso
+build: build/os.iso
 
-run: os.iso
-	qemu-system-x86_64 -cdrom os.iso
+run: build/os.iso
+	qemu-system-x86_64 -cdrom build/os.iso
+
+clean:
+	rm -rf build

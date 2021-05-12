@@ -1,4 +1,4 @@
-default: os.iso
+default: build
 
 multiboot_header.o: multiboot_header.asm
 	nasm -f elf64 multiboot_header.asm
@@ -14,3 +14,8 @@ os.iso: kernel.bin grub.cfg
 	cp grub.cfg isofiles/boot/grub
 	cp kernel.bin isofiles/boot/
 	grub-mkrescue -o os.iso isofiles
+
+build: os.iso
+
+run: os.iso
+	qemu-system-x86_64 -cdrom os.iso
